@@ -1,2 +1,3 @@
 # PGRF3-2
-Zpracování obrazu
+## Zpracování obrazu
+- Dithering (půltonovani, maticové, rozptylovani, …)
