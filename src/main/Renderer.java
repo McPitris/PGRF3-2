@@ -30,9 +30,13 @@ public class Renderer extends AbstractRenderer {
 
     private Mat4 projection;
    // private int locView, locProjection, locTime, locTimeLight, locSolid, locLightPosition, locEyePosition, locLightVP, locTransform, locLight;
+private int locColorMode;
 
     private int locViewLight, locProjectionLight, locSolidLight;
     private OGLTexture2D texture;
+
+    private int ditherMode = 0;
+    private int colorMode = 0;
 
    // private OGLTexture.Viewer viewer;
     //private static List<Integer> VIEW_TYPES = Arrays.asList(GL_LINE, GL_POINT, GL_FILL);
@@ -50,10 +54,12 @@ public class Renderer extends AbstractRenderer {
         // shaderProgramDith = ShaderUtils.loadProgram("/dither");
         shaderProgramDith = ShaderUtils.loadProgram("/dither");
         try {
-            texture = new OGLTexture2D("textures/blondee.jpg");
+            texture = new OGLTexture2D("textures/andrea1.jpg");
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+        locColorMode = glGetUniformLocation(shaderProgramDith, "colorMode");
 
         projection = new Mat4PerspRH(Math.PI / 3, 600 / 800f, 1.0, 20.0);
 
@@ -90,6 +96,8 @@ public class Renderer extends AbstractRenderer {
         glUseProgram(shaderProgramDith);
         texture.bind(shaderProgramDith, "mosaic", 0);
         buffers.draw(GL_TRIANGLES,shaderProgramDith);
+
+        glUniform1i(locColorMode, colorMode);
     }
 
     @Override
@@ -128,7 +136,15 @@ public class Renderer extends AbstractRenderer {
         public void invoke(long window, int key, int scancode, int action, int mods) {
             if (action == GLFW_PRESS || action == GLFW_REPEAT) {
                 switch (key) {
+                    // přepínání fotky/brevného ditheringu/ grayscale ditheringu v daném ditherModu //TODO: aktuálně pouze random dithering
+                    case GLFW_KEY_C -> {
+                        if(colorMode == 2){
+                            colorMode=0;
+                        }else{
+                            colorMode++;
+                        }
 
+                    }
                 }
             }
         }
