@@ -25,11 +25,12 @@ public class GridFactory {
             }
         }
         return vb;
+
     }
 
     public static OGLBuffers createGrid(int a, int b) {
 
-        float[] vb = getVertexBuffer(a, b);
+        float [] vb = getVertexBuffer(a,b);
 
         int[] ib = new int[(a - 1) * (b - 1) * 2 * 3];
         int index2 = 0;
@@ -46,7 +47,7 @@ public class GridFactory {
         }
 
         OGLBuffers.Attrib[] attributes = {
-                new OGLBuffers.Attrib("inPosition", 2)
+                new OGLBuffers.Attrib("inPosition", 2),
         };
         return new OGLBuffers(vb, attributes, ib);
     }

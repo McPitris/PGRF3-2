@@ -23,7 +23,7 @@ import static org.lwjgl.opengl.GL30.glBindFramebuffer;
  */
 public class Renderer extends AbstractRenderer {
 
-    private boolean mousePressed;
+   // private boolean mousePressed;
 
     private int shaderProgramDith;
     private OGLBuffers buffers;
@@ -33,6 +33,7 @@ public class Renderer extends AbstractRenderer {
 
     private int locViewLight, locProjectionLight, locSolidLight;
     private OGLTexture2D texture;
+
    // private OGLTexture.Viewer viewer;
     //private static List<Integer> VIEW_TYPES = Arrays.asList(GL_LINE, GL_POINT, GL_FILL);
 
@@ -45,16 +46,17 @@ public class Renderer extends AbstractRenderer {
         OGLUtils.shaderCheck();
 
         glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+        buffers = Quad.getQuad();
+        // shaderProgramDith = ShaderUtils.loadProgram("/dither");
         shaderProgramDith = ShaderUtils.loadProgram("/dither");
         try {
-            texture = new OGLTexture2D("textures/mosaic.jpg");
+            texture = new OGLTexture2D("textures/blondee.jpg");
         } catch (IOException e) {
             e.printStackTrace();
         }
 
         projection = new Mat4PerspRH(Math.PI / 3, 600 / 800f, 1.0, 20.0);
 
-        buffers = GridFactory.createGrid(100, 100);
 
         textRenderer = new OGLTextRenderer(width, height);
     }
@@ -67,7 +69,7 @@ public class Renderer extends AbstractRenderer {
         render();
 
 
-        textRenderer.addStr2D(20, 20, "PGRF");
+        textRenderer.addStr2D(20, 20, "PGRF3 - 2");
  }
 
 
@@ -76,10 +78,6 @@ public class Renderer extends AbstractRenderer {
     }
 
     private void render() {
-
-        // systém souřadnic: https://en.wikipedia.org/wiki/Spherical_coordinate_system
-        glUseProgram(shaderProgramDith);
-
         // výchozí framebuffer - render to obrazovky
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
@@ -89,7 +87,9 @@ public class Renderer extends AbstractRenderer {
         glClearColor(0, 0.5f, 0, 1);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+        glUseProgram(shaderProgramDith);
         texture.bind(shaderProgramDith, "mosaic", 0);
+        buffers.draw(GL_TRIANGLES,shaderProgramDith);
     }
 
     @Override
@@ -110,9 +110,7 @@ public class Renderer extends AbstractRenderer {
     private final GLFWCursorPosCallback cursorPosCallback = new GLFWCursorPosCallback() {
         @Override
         public void invoke(long window, double x, double y) {
-            if (mousePressed) {
 
-            }
         }
     };
 
