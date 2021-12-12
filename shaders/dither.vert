@@ -1,6 +1,6 @@
 #version 130
 
-in vec2 inPosition;// input from the vertex buffer
+in vec2 inPosition;
 in vec2 inTextureCoord;
 out vec2 textureCoord;
 
