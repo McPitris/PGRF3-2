@@ -9,6 +9,7 @@ import transforms.*;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
@@ -23,24 +24,65 @@ import static org.lwjgl.opengl.GL30.glBindFramebuffer;
  */
 public class Renderer extends AbstractRenderer {
 
-   // private boolean mousePressed;
+    // private boolean mousePressed;
 
     private int shaderProgramDith;
     private OGLBuffers buffers;
 
     private Mat4 projection;
-   // private int locView, locProjection, locTime, locTimeLight, locSolid, locLightPosition, locEyePosition, locLightVP, locTransform, locLight;
-private int locColorMode;
 
-    private int locViewLight, locProjectionLight, locSolidLight;
+    private int locColorMode, locDitherMode, locBayerMatrix;
+
     private OGLTexture2D texture;
 
     private int ditherMode = 0;
     private int colorMode = 0;
+    private int bayerMatrix = 0;
 
-   // private OGLTexture.Viewer viewer;
+    // private OGLTexture.Viewer viewer;
     //private static List<Integer> VIEW_TYPES = Arrays.asList(GL_LINE, GL_POINT, GL_FILL);
 
+    private String getLabel(String type) {
+        String label = null;
+        if (Objects.equals(type, "ditherMode")) {
+            switch (ditherMode) {
+                case 0 -> {
+                    label = "Random dithering";
+                }
+                case 1 -> {
+                    label = "Ordered dithering";
+                }
+            }
+        }
+        if (Objects.equals(type, "colorMode")) {
+            switch (colorMode) {
+                case 0 -> {
+                    label = "Original image";
+                }
+                case 1 -> {
+                    label = "Color dithering";
+                }
+                case 2 -> {
+                    label = "Grayscale dithering";
+                }
+            }
+        }
+        if (Objects.equals(type, "bayerMatrix")) {
+            switch (bayerMatrix) {
+                case 0 -> {
+                    label = "2x2";
+                }
+                case 1 -> {
+                    label = "4x4";
+                }
+                case 2 -> {
+                    label = "8x8";
+                }
+            }
+        }
+return label;
+
+    }
 
     @Override
     public void init() {
@@ -54,12 +96,14 @@ private int locColorMode;
         // shaderProgramDith = ShaderUtils.loadProgram("/dither");
         shaderProgramDith = ShaderUtils.loadProgram("/dither");
         try {
-            texture = new OGLTexture2D("textures/andrea1.jpg");
+            texture = new OGLTexture2D("textures/andrea2.jpg");
         } catch (IOException e) {
             e.printStackTrace();
         }
 
         locColorMode = glGetUniformLocation(shaderProgramDith, "colorMode");
+        locDitherMode = glGetUniformLocation(shaderProgramDith, "ditherMode");
+        locBayerMatrix = glGetUniformLocation(shaderProgramDith, "bayerMatrix");
 
         projection = new Mat4PerspRH(Math.PI / 3, 600 / 800f, 1.0, 20.0);
 
@@ -74,12 +118,17 @@ private int locColorMode;
 
         render();
 
-
         textRenderer.addStr2D(20, 20, "PGRF3 - 2");
- }
+        textRenderer.addStr2D(20, 40, "Dither mode: " + getLabel("ditherMode"));
+        textRenderer.addStr2D(20, 60, "Color mode: " + getLabel("colorMode"));
+        if (ditherMode == 1) {
+            textRenderer.addStr2D(20, 80, "Matrix mode: " + getLabel("bayerMatrix"));
+        }
+
+    }
 
 
-    private int boolToInt(boolean bool){
+    private int boolToInt(boolean bool) {
         return bool ? 1 : 0;
     }
 
@@ -95,9 +144,11 @@ private int locColorMode;
 
         glUseProgram(shaderProgramDith);
         texture.bind(shaderProgramDith, "mosaic", 0);
-        buffers.draw(GL_TRIANGLES,shaderProgramDith);
+        buffers.draw(GL_TRIANGLES, shaderProgramDith);
 
         glUniform1i(locColorMode, colorMode);
+        glUniform1i(locDitherMode, ditherMode);
+        glUniform1i(locBayerMatrix, bayerMatrix);
     }
 
     @Override
@@ -136,15 +187,35 @@ private int locColorMode;
         public void invoke(long window, int key, int scancode, int action, int mods) {
             if (action == GLFW_PRESS || action == GLFW_REPEAT) {
                 switch (key) {
-                    // přepínání fotky/brevného ditheringu/ grayscale ditheringu v daném ditherModu //TODO: aktuálně pouze random dithering
+                    //  přepínání fotky/brevného ditheringu/ grayscale ditheringu v daném ditherModu //TODO: aktuálně pouze random dithering
+                    case GLFW_KEY_X -> {
+                        if (ditherMode == 1) {
+                            ditherMode = 0;
+                        } else {
+                            ditherMode++;
+                            bayerMatrix = 0;
+
+                        }
+                    }
                     case GLFW_KEY_C -> {
-                        if(colorMode == 2){
-                            colorMode=0;
-                        }else{
+                        if (colorMode == 2) {
+                            colorMode = 0;
+                        } else {
                             colorMode++;
                         }
 
                     }
+                    case GLFW_KEY_UP -> {
+                        if (bayerMatrix < 2) {
+                            bayerMatrix++;
+                        }
+                    }
+                    case GLFW_KEY_DOWN -> {
+                        if (bayerMatrix > 0) {
+                            bayerMatrix--;
+                        }
+                    }
+
                 }
             }
         }
