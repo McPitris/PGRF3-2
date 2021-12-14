@@ -6,7 +6,9 @@ import org.lwjgl.glfw.GLFWKeyCallback;
 import org.lwjgl.glfw.GLFWMouseButtonCallback;
 import transforms.*;
 
+import javax.swing.plaf.FileChooserUI;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -38,6 +40,11 @@ public class Renderer extends AbstractRenderer {
     private int ditherMode = 0;
     private int colorMode = 0;
     private int bayerMatrix = 0;
+
+    ArrayList<String> textures = new ArrayList<>();
+
+    private int choosedTexture = 0;
+    private int switchTexture = 0;
 
     // private OGLTexture.Viewer viewer;
     //private static List<Integer> VIEW_TYPES = Arrays.asList(GL_LINE, GL_POINT, GL_FILL);
@@ -80,7 +87,7 @@ public class Renderer extends AbstractRenderer {
                 }
             }
         }
-return label;
+        return label;
 
     }
 
@@ -95,8 +102,14 @@ return label;
         buffers = Quad.getQuad();
         // shaderProgramDith = ShaderUtils.loadProgram("/dither");
         shaderProgramDith = ShaderUtils.loadProgram("/dither");
+        textures.add("andrea1.jpg");
+        textures.add("andrea2.jpg");
+        textures.add("covid.jpg");
+        textures.add("kate.jpg");
+        textures.add("monica.jpg");
+
         try {
-            texture = new OGLTexture2D("textures/andrea2.jpg");
+            texture = new OGLTexture2D("textures/" + textures.get(0));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -143,6 +156,17 @@ return label;
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         glUseProgram(shaderProgramDith);
+
+        if (choosedTexture != switchTexture) {
+            System.out.println(textures.size());
+            try {
+                texture = new OGLTexture2D("textures/" + textures.get(choosedTexture));
+                switchTexture = choosedTexture;
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
         texture.bind(shaderProgramDith, "mosaic", 0);
         buffers.draw(GL_TRIANGLES, shaderProgramDith);
 
@@ -187,7 +211,7 @@ return label;
         public void invoke(long window, int key, int scancode, int action, int mods) {
             if (action == GLFW_PRESS || action == GLFW_REPEAT) {
                 switch (key) {
-                    //  přepínání fotky/brevného ditheringu/ grayscale ditheringu v daném ditherModu //TODO: aktuálně pouze random dithering
+                    // přepínání ditheringu
                     case GLFW_KEY_X -> {
                         if (ditherMode == 1) {
                             ditherMode = 0;
@@ -197,6 +221,7 @@ return label;
 
                         }
                     }
+                    //  přepínání fotky/brevného ditheringu/ grayscale ditheringu v daném ditherModu
                     case GLFW_KEY_C -> {
                         if (colorMode == 2) {
                             colorMode = 0;
@@ -205,14 +230,28 @@ return label;
                         }
 
                     }
+                    // změna matice při použití ordered dithering (zvětšení matice) (max 8x8)
                     case GLFW_KEY_UP -> {
                         if (bayerMatrix < 2) {
                             bayerMatrix++;
                         }
                     }
+                    // změna matice při použití ordered dithering (zmenšení matice) (min 2x2)
                     case GLFW_KEY_DOWN -> {
                         if (bayerMatrix > 0) {
                             bayerMatrix--;
+                        }
+                    }
+                    // další image/textura
+                    case GLFW_KEY_RIGHT -> {
+                        if (choosedTexture != textures.size() - 1) {
+                            choosedTexture++;
+                        }
+                    }
+                    // předchozí image/textura
+                    case GLFW_KEY_LEFT -> {
+                        if (choosedTexture != 0) {
+                            choosedTexture--;
                         }
                     }
 
