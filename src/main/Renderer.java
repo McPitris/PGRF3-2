@@ -45,6 +45,7 @@ public class Renderer extends AbstractRenderer {
 
     private int choosedTexture = 0;
     private int switchTexture = 0;
+    private boolean uploadImage = false;
 
     // private OGLTexture.Viewer viewer;
     //private static List<Integer> VIEW_TYPES = Arrays.asList(GL_LINE, GL_POINT, GL_FILL);
@@ -102,11 +103,15 @@ public class Renderer extends AbstractRenderer {
         buffers = Quad.getQuad();
         // shaderProgramDith = ShaderUtils.loadProgram("/dither");
         shaderProgramDith = ShaderUtils.loadProgram("/dither");
-        textures.add("andrea1.jpg");
-        textures.add("andrea2.jpg");
-        textures.add("covid.jpg");
-        textures.add("kate.jpg");
-        textures.add("monica.jpg");
+//        textures.add("andrea1.jpg");
+//        textures.add("andrea2.jpg");
+//        textures.add("covid.jpg");
+//        textures.add("kate.jpg");
+//        textures.add("monica.jpg");
+
+//        FileControler.setDefaultCountOfImages(textures.size());
+        textures.addAll(FileControler.getAllImages());
+        System.out.println(FileControler.getAllImages());
 
         try {
             texture = new OGLTexture2D("textures/" + textures.get(0));
@@ -158,13 +163,37 @@ public class Renderer extends AbstractRenderer {
         glUseProgram(shaderProgramDith);
 
         if (choosedTexture != switchTexture) {
-            System.out.println(textures.size());
+//            System.out.println("Hleádám: "+textures.get(choosedTexture));
+//            System.out.println("vracím ti: "+FileControler.fileExists(textures.get(choosedTexture)));
+//            while(!FileControler.fileExists(textures.get(choosedTexture))){
+//                try {
+//                    System.out.println("čekám");
+//                    Thread.sleep(1000);
+//                } catch (InterruptedException e) {
+//                    e.printStackTrace();
+//                }
+//            }
+            System.out.println("Chi zobrazit: "+ choosedTexture);
             try {
                 texture = new OGLTexture2D("textures/" + textures.get(choosedTexture));
                 switchTexture = choosedTexture;
             } catch (IOException e) {
                 e.printStackTrace();
             }
+        }
+
+        if(uploadImage){
+            String nTextureName = FileControler.loadImage();
+            if(nTextureName != null && !nTextureName.equals("")){
+//                System.out.println("Nahráno");
+//                System.out.println(nTextureName);
+                textures.add(nTextureName);
+                System.out.println(textures);
+//                System.out.println("Velikost listu: "+textures.size());
+//                choosedTexture = textures.size()-1;
+
+            }
+            uploadImage = false;
         }
 
         texture.bind(shaderProgramDith, "mosaic", 0);
@@ -253,6 +282,10 @@ public class Renderer extends AbstractRenderer {
                         if (choosedTexture != 0) {
                             choosedTexture--;
                         }
+                    }
+                    // upload textury
+                    case GLFW_KEY_U -> {
+                        uploadImage = true;
                     }
 
                 }
