@@ -6,11 +6,8 @@ import org.lwjgl.glfw.GLFWKeyCallback;
 import org.lwjgl.glfw.GLFWMouseButtonCallback;
 import transforms.*;
 
-import javax.swing.plaf.FileChooserUI;
-import java.io.IOException;
+
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 import java.util.Objects;
 
 import static org.lwjgl.glfw.GLFW.*;
@@ -26,12 +23,9 @@ import static org.lwjgl.opengl.GL30.glBindFramebuffer;
  */
 public class Renderer extends AbstractRenderer {
 
-    // private boolean mousePressed;
 
     private int shaderProgramDith;
     private OGLBuffers buffers;
-
-    private Mat4 projection;
 
     private int locColorMode, locDitherMode, locBayerMatrix;
 
@@ -41,7 +35,7 @@ public class Renderer extends AbstractRenderer {
     private int colorMode = 0;
     private int bayerMatrix = 0;
 
-    ArrayList<String> textures = new ArrayList<>();
+    ArrayList<OGLTexture2D> textures = new ArrayList<>();
 
     private int choosedTexture = 0;
     private int switchTexture = 0;
@@ -109,21 +103,20 @@ public class Renderer extends AbstractRenderer {
 //        textures.add("kate.jpg");
 //        textures.add("monica.jpg");
 
+
+
 //        FileControler.setDefaultCountOfImages(textures.size());
         textures.addAll(FileControler.getAllImages());
         System.out.println(FileControler.getAllImages());
 
-        try {
-            texture = new OGLTexture2D("textures/" + textures.get(0));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        texture = textures.get(0);
+
 
         locColorMode = glGetUniformLocation(shaderProgramDith, "colorMode");
         locDitherMode = glGetUniformLocation(shaderProgramDith, "ditherMode");
         locBayerMatrix = glGetUniformLocation(shaderProgramDith, "bayerMatrix");
 
-        projection = new Mat4PerspRH(Math.PI / 3, 600 / 800f, 1.0, 20.0);
+//        Mat4 projection = new Mat4PerspRH(Math.PI / 3, 600 / 800f, 1.0, 20.0);
 
 
         textRenderer = new OGLTextRenderer(width, height);
@@ -163,36 +156,15 @@ public class Renderer extends AbstractRenderer {
         glUseProgram(shaderProgramDith);
 
         if (choosedTexture != switchTexture) {
-//            System.out.println("Hleádám: "+textures.get(choosedTexture));
-//            System.out.println("vracím ti: "+FileControler.fileExists(textures.get(choosedTexture)));
-//            while(!FileControler.fileExists(textures.get(choosedTexture))){
-//                try {
-//                    System.out.println("čekám");
-//                    Thread.sleep(1000);
-//                } catch (InterruptedException e) {
-//                    e.printStackTrace();
-//                }
-//            }
+
             System.out.println("Chi zobrazit: "+ choosedTexture);
-            try {
-                texture = new OGLTexture2D("textures/" + textures.get(choosedTexture));
+                texture = textures.get(choosedTexture);
                 switchTexture = choosedTexture;
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
         }
 
         if(uploadImage){
-            String nTextureName = FileControler.loadImage();
-            if(nTextureName != null && !nTextureName.equals("")){
-//                System.out.println("Nahráno");
-//                System.out.println(nTextureName);
-                textures.add(nTextureName);
-                System.out.println(textures);
-//                System.out.println("Velikost listu: "+textures.size());
-//                choosedTexture = textures.size()-1;
-
-            }
+            OGLTexture2D existingTexture = FileControler.loadImage();
+            if(existingTexture != null)texture = existingTexture;
             uploadImage = false;
         }
 
