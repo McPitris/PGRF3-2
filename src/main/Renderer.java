@@ -27,19 +27,20 @@ public class Renderer extends AbstractRenderer {
     private int shaderProgramDith;
     private OGLBuffers buffers;
 
-    private int locColorMode, locDitherMode, locBayerMatrix;
+    private int locColorMode, locDitherMode, locBayerMatrix, locTresHold;
 
     private OGLTexture2D texture;
 
     private int ditherMode = 0;
     private int colorMode = 0;
     private int bayerMatrix = 0;
+    private float tresHold = 0.4f;
 
     ArrayList<OGLTexture2D> textures = new ArrayList<>();
 
     private int choosedTexture = 0;
     private int switchTexture = 0;
-    private boolean uploadImage = false;
+    private boolean uploadImage = false, showLabels = true;
 
     // private OGLTexture.Viewer viewer;
     //private static List<Integer> VIEW_TYPES = Arrays.asList(GL_LINE, GL_POINT, GL_FILL);
@@ -53,6 +54,9 @@ public class Renderer extends AbstractRenderer {
                 }
                 case 1 -> {
                     label = "Ordered dithering";
+                }
+                case 2 -> {
+                    label = "Treshold dithering";
                 }
             }
         }
@@ -81,6 +85,9 @@ public class Renderer extends AbstractRenderer {
                     label = "8x8";
                 }
             }
+        }
+        if(Objects.equals(type, "treshold")){
+            label = (int)(tresHold*100)+"%";
         }
         return label;
 
@@ -115,6 +122,7 @@ public class Renderer extends AbstractRenderer {
         locColorMode = glGetUniformLocation(shaderProgramDith, "colorMode");
         locDitherMode = glGetUniformLocation(shaderProgramDith, "ditherMode");
         locBayerMatrix = glGetUniformLocation(shaderProgramDith, "bayerMatrix");
+        locTresHold = glGetUniformLocation(shaderProgramDith, "tresHold");
 
 //        Mat4 projection = new Mat4PerspRH(Math.PI / 3, 600 / 800f, 1.0, 20.0);
 
@@ -128,13 +136,18 @@ public class Renderer extends AbstractRenderer {
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
         render();
-
-        textRenderer.addStr2D(20, 20, "PGRF3 - 2");
-        textRenderer.addStr2D(20, 40, "Dither mode: " + getLabel("ditherMode"));
-        textRenderer.addStr2D(20, 60, "Color mode: " + getLabel("colorMode"));
-        if (ditherMode == 1) {
-            textRenderer.addStr2D(20, 80, "Matrix mode: " + getLabel("bayerMatrix"));
+        if(showLabels){
+            textRenderer.addStr2D(20, 20, "PGRF3 - 2");
+            textRenderer.addStr2D(20, 40, "Dither mode: " + getLabel("ditherMode"));
+            textRenderer.addStr2D(20, 60, "Color mode: " + getLabel("colorMode"));
+            if (ditherMode == 1) {
+                textRenderer.addStr2D(20, 80, "Matrix mode: " + getLabel("bayerMatrix"));
+            }
+            if(ditherMode == 2){
+                textRenderer.addStr2D(20, 80, "Treashold: " + getLabel("treshold"));
+            }
         }
+
 
     }
 
@@ -174,6 +187,7 @@ public class Renderer extends AbstractRenderer {
         glUniform1i(locColorMode, colorMode);
         glUniform1i(locDitherMode, ditherMode);
         glUniform1i(locBayerMatrix, bayerMatrix);
+        glUniform1f(locTresHold, tresHold);
     }
 
     @Override
@@ -214,11 +228,12 @@ public class Renderer extends AbstractRenderer {
                 switch (key) {
                     // přepínání ditheringu
                     case GLFW_KEY_X -> {
-                        if (ditherMode == 1) {
+                        if (ditherMode == 2) {
                             ditherMode = 0;
                         } else {
                             ditherMode++;
                             bayerMatrix = 0;
+                            tresHold = 0.4f;
 
                         }
                     }
@@ -233,14 +248,20 @@ public class Renderer extends AbstractRenderer {
                     }
                     // změna matice při použití ordered dithering (zvětšení matice) (max 8x8)
                     case GLFW_KEY_UP -> {
-                        if (bayerMatrix < 2) {
+                        if (bayerMatrix < 2 && ditherMode == 1) {
                             bayerMatrix++;
+                        }
+                        if (tresHold < 1 && ditherMode == 2) {
+                            tresHold = tresHold + 0.1f;
                         }
                     }
                     // změna matice při použití ordered dithering (zmenšení matice) (min 2x2)
                     case GLFW_KEY_DOWN -> {
-                        if (bayerMatrix > 0) {
+                        if (bayerMatrix > 0 && ditherMode == 1) {
                             bayerMatrix--;
+                        }
+                        if(tresHold > 0.1f && ditherMode == 2){
+                            tresHold = tresHold - 0.1f;
                         }
                     }
                     // další image/textura
@@ -258,6 +279,10 @@ public class Renderer extends AbstractRenderer {
                     // upload textury
                     case GLFW_KEY_U -> {
                         uploadImage = true;
+                    }
+                    // show/hide labels
+                    case GLFW_KEY_H -> {
+                        showLabels = !showLabels;
                     }
 
                 }

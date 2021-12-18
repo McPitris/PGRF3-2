@@ -4,6 +4,7 @@ in vec2 textureCoord;
 
 uniform sampler2D mosaic;
 uniform int colorMode, ditherMode, bayerMatrix;
+uniform float tresHold;
 
 out vec4 outColor;
 
@@ -78,6 +79,14 @@ float orderedDith(float color) {
     return (distance < d) ? closestColor : secondClosestColor;
 }
 
+// source: https://stackoverflow.com/questions/8663004/how-best-to-approach-a-localised-thresholding-opengl-function?rq=1
+float treshHoldDith(float color) {
+    if (color < tresHold){
+        return 0.0;
+    }
+    return 1.0;
+}
+
 
 void main(){
     // source: https://community.khronos.org/t/how-to-texture-a-rgb-image-in-grayscale/36420
@@ -99,7 +108,7 @@ void main(){
         randomDither(textureColor.r),
         randomDither(textureColor.g),
         randomDither(textureColor.b)
-        ), 1.0);
+        ), 1.0f);
         break;
 
         case 1:
@@ -108,12 +117,21 @@ void main(){
         orderedDith(textureColor.r),
         orderedDith(textureColor.g),
         orderedDith(textureColor.b)
-        ), 1.0);
+        ), 1.0f);
 
+        break;
+
+        case 2:
+        colorMode == 2 ?  outColor = vec4(vec3(treshHoldDith(GrayScale)), 1.0f) :
+        outColor = vec4(vec3(
+        treshHoldDith(textureColor.r),
+        treshHoldDith(textureColor.g),
+        treshHoldDith(textureColor.b)
+        ),1.0f);
         break;
     }
     if (colorMode == 0){
-        outColor = vec4(textureColor, 1.0);
+        outColor = vec4(textureColor, 1.0f);
     }
 }
 
