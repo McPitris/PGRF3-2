@@ -6,10 +6,10 @@ public class Quad {
 // https://home.zcu.cz/~smolik/zpg/cviceni/cv_04.html
     private static float[] getVertexBuffer() {
         float[] vb = {
-                -1, -1, 0, 0, // textura je opačně TODO: nutno přepsat a otočit texturu správně
-                1, -1, 1, 0,
-                1, 1, 1, 1,
-                -1, 1, 0, 1
+                -1, -1, 0, 1,
+                1, -1, 1, 1,
+                1, 1, 1, 0,
+                -1, 1, 0, 0
         };
         return vb;
     }

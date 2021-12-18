@@ -6,9 +6,8 @@ import org.lwjgl.glfw.GLFWKeyCallback;
 import org.lwjgl.glfw.GLFWMouseButtonCallback;
 import transforms.*;
 
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
+
+import java.util.ArrayList;
 import java.util.Objects;
 
 import static org.lwjgl.glfw.GLFW.*;
@@ -24,12 +23,9 @@ import static org.lwjgl.opengl.GL30.glBindFramebuffer;
  */
 public class Renderer extends AbstractRenderer {
 
-    // private boolean mousePressed;
 
     private int shaderProgramDith;
     private OGLBuffers buffers;
-
-    private Mat4 projection;
 
     private int locColorMode, locDitherMode, locBayerMatrix;
 
@@ -38,6 +34,12 @@ public class Renderer extends AbstractRenderer {
     private int ditherMode = 0;
     private int colorMode = 0;
     private int bayerMatrix = 0;
+
+    ArrayList<OGLTexture2D> textures = new ArrayList<>();
+
+    private int choosedTexture = 0;
+    private int switchTexture = 0;
+    private boolean uploadImage = false;
 
     // private OGLTexture.Viewer viewer;
     //private static List<Integer> VIEW_TYPES = Arrays.asList(GL_LINE, GL_POINT, GL_FILL);
@@ -80,7 +82,7 @@ public class Renderer extends AbstractRenderer {
                 }
             }
         }
-return label;
+        return label;
 
     }
 
@@ -95,17 +97,26 @@ return label;
         buffers = Quad.getQuad();
         // shaderProgramDith = ShaderUtils.loadProgram("/dither");
         shaderProgramDith = ShaderUtils.loadProgram("/dither");
-        try {
-            texture = new OGLTexture2D("textures/andrea2.jpg");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+//        textures.add("andrea1.jpg");
+//        textures.add("andrea2.jpg");
+//        textures.add("covid.jpg");
+//        textures.add("kate.jpg");
+//        textures.add("monica.jpg");
+
+
+
+//        FileControler.setDefaultCountOfImages(textures.size());
+        textures.addAll(FileControler.getAllImages());
+        System.out.println(FileControler.getAllImages());
+
+        texture = textures.get(0);
+
 
         locColorMode = glGetUniformLocation(shaderProgramDith, "colorMode");
         locDitherMode = glGetUniformLocation(shaderProgramDith, "ditherMode");
         locBayerMatrix = glGetUniformLocation(shaderProgramDith, "bayerMatrix");
 
-        projection = new Mat4PerspRH(Math.PI / 3, 600 / 800f, 1.0, 20.0);
+//        Mat4 projection = new Mat4PerspRH(Math.PI / 3, 600 / 800f, 1.0, 20.0);
 
 
         textRenderer = new OGLTextRenderer(width, height);
@@ -143,6 +154,20 @@ return label;
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         glUseProgram(shaderProgramDith);
+
+        if (choosedTexture != switchTexture) {
+
+            System.out.println("Chi zobrazit: "+ choosedTexture);
+                texture = textures.get(choosedTexture);
+                switchTexture = choosedTexture;
+        }
+
+        if(uploadImage){
+            OGLTexture2D existingTexture = FileControler.loadImage();
+            if(existingTexture != null)texture = existingTexture;
+            uploadImage = false;
+        }
+
         texture.bind(shaderProgramDith, "mosaic", 0);
         buffers.draw(GL_TRIANGLES, shaderProgramDith);
 
@@ -187,7 +212,7 @@ return label;
         public void invoke(long window, int key, int scancode, int action, int mods) {
             if (action == GLFW_PRESS || action == GLFW_REPEAT) {
                 switch (key) {
-                    //  přepínání fotky/brevného ditheringu/ grayscale ditheringu v daném ditherModu //TODO: aktuálně pouze random dithering
+                    // přepínání ditheringu
                     case GLFW_KEY_X -> {
                         if (ditherMode == 1) {
                             ditherMode = 0;
@@ -197,6 +222,7 @@ return label;
 
                         }
                     }
+                    //  přepínání fotky/brevného ditheringu/ grayscale ditheringu v daném ditherModu
                     case GLFW_KEY_C -> {
                         if (colorMode == 2) {
                             colorMode = 0;
@@ -205,15 +231,33 @@ return label;
                         }
 
                     }
+                    // změna matice při použití ordered dithering (zvětšení matice) (max 8x8)
                     case GLFW_KEY_UP -> {
                         if (bayerMatrix < 2) {
                             bayerMatrix++;
                         }
                     }
+                    // změna matice při použití ordered dithering (zmenšení matice) (min 2x2)
                     case GLFW_KEY_DOWN -> {
                         if (bayerMatrix > 0) {
                             bayerMatrix--;
                         }
+                    }
+                    // další image/textura
+                    case GLFW_KEY_RIGHT -> {
+                        if (choosedTexture != textures.size() - 1) {
+                            choosedTexture++;
+                        }
+                    }
+                    // předchozí image/textura
+                    case GLFW_KEY_LEFT -> {
+                        if (choosedTexture != 0) {
+                            choosedTexture--;
+                        }
+                    }
+                    // upload textury
+                    case GLFW_KEY_U -> {
+                        uploadImage = true;
                     }
 
                 }
