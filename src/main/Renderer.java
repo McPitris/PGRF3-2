@@ -57,28 +57,16 @@ public class Renderer extends AbstractRenderer {
         }
         if (Objects.equals(type, "colorMode")) {
             switch (colorMode) {
-                case 0 -> {
-                    label = "Original image";
-                }
-                case 1 -> {
-                    label = "Color dithering";
-                }
-                case 2 -> {
-                    label = "Grayscale dithering";
-                }
+                case 0 -> label = "Original image";
+                case 1 -> label = "Color dithering";
+                case 2 -> label = "Grayscale dithering";
             }
         }
         if (Objects.equals(type, "bayerMatrix")) {
             switch (bayerMatrix) {
-                case 0 -> {
-                    label = "2x2";
-                }
-                case 1 -> {
-                    label = "4x4";
-                }
-                case 2 -> {
-                    label = "8x8";
-                }
+                case 0 -> label = "2x2";
+                case 1 -> label = "4x4";
+                case 2 -> label = "8x8";
             }
         }
         if (Objects.equals(type, "treshold")) {
