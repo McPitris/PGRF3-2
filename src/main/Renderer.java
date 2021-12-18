@@ -1,11 +1,7 @@
 package main;
 
 import lwjglutils.*;
-import org.lwjgl.glfw.GLFWCursorPosCallback;
 import org.lwjgl.glfw.GLFWKeyCallback;
-import org.lwjgl.glfw.GLFWMouseButtonCallback;
-import transforms.*;
-
 
 import java.util.ArrayList;
 import java.util.Objects;
@@ -17,9 +13,9 @@ import static org.lwjgl.opengl.GL30.GL_FRAMEBUFFER;
 import static org.lwjgl.opengl.GL30.glBindFramebuffer;
 
 /**
- * @author PGRF FIM UHK
- * @version 2.0
- * @since 2019-09-02
+ * @author Michal Petras
+ * @version 1.0
+ * @since 2021-12-18
  */
 public class Renderer extends AbstractRenderer {
 
@@ -43,9 +39,7 @@ public class Renderer extends AbstractRenderer {
     private int switchTexture = 0;
     private boolean uploadImage = false, showLabels = true;
 
-    // private OGLTexture.Viewer viewer;
-    //private static List<Integer> VIEW_TYPES = Arrays.asList(GL_LINE, GL_POINT, GL_FILL);
-
+    // vypisování textu do obrazu
     private String getLabel(String type) {
         String label = null;
         if (Objects.equals(type, "ditherMode")) {
@@ -87,11 +81,11 @@ public class Renderer extends AbstractRenderer {
                 }
             }
         }
-        if(Objects.equals(type, "treshold")){
-            label = (int)(tresHold*100)+"%";
+        if (Objects.equals(type, "treshold")) {
+            label = (int) (tresHold * 100) + "%";
         }
-        if(Objects.equals(type, "noiseConst")){
-            label = (int)(noiseConst*100)+"%";
+        if (Objects.equals(type, "noiseConst")) {
+            label = (int) (noiseConst * 100) + "%";
         }
         return label;
 
@@ -106,22 +100,12 @@ public class Renderer extends AbstractRenderer {
 
         glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
         buffers = Quad.getQuad();
-        // shaderProgramDith = ShaderUtils.loadProgram("/dither");
         shaderProgramDith = ShaderUtils.loadProgram("/dither");
-//        textures.add("andrea1.jpg");
-//        textures.add("andrea2.jpg");
-//        textures.add("covid.jpg");
-//        textures.add("kate.jpg");
-//        textures.add("monica.jpg");
 
-
-
-//        FileControler.setDefaultCountOfImages(textures.size());
         textures.addAll(FileControler.getAllImages());
         System.out.println(FileControler.getAllImages());
 
         texture = textures.get(0);
-
 
         locColorMode = glGetUniformLocation(shaderProgramDith, "colorMode");
         locDitherMode = glGetUniformLocation(shaderProgramDith, "ditherMode");
@@ -129,29 +113,30 @@ public class Renderer extends AbstractRenderer {
         locTresHold = glGetUniformLocation(shaderProgramDith, "tresHold");
         locNoiseConst = glGetUniformLocation(shaderProgramDith, "noiseConst");
 
-//        Mat4 projection = new Mat4PerspRH(Math.PI / 3, 600 / 800f, 1.0, 20.0);
-
-
         textRenderer = new OGLTextRenderer(width, height);
     }
 
     @Override
     public void display() {
-        glEnable(GL_DEPTH_TEST); // zapnout z-buffer (kvůli TextRendereru)
+        glEnable(GL_DEPTH_TEST);
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
         render();
-        if(showLabels){
+
+        /**
+         * @param showLabels - pokud je true (zapnutí popisků) zobrazí se text nastavení do obrazu
+         */
+        if (showLabels) {
             textRenderer.addStr2D(20, 20, "PGRF3 - 2");
             textRenderer.addStr2D(20, 40, "Dither mode: " + getLabel("ditherMode"));
             textRenderer.addStr2D(20, 60, "Color mode: " + getLabel("colorMode"));
-            if(ditherMode == 0){
+            if (ditherMode == 0) {
                 textRenderer.addStr2D(20, 80, "Random noise: " + getLabel("noiseConst"));
             }
             if (ditherMode == 1) {
                 textRenderer.addStr2D(20, 80, "Matrix mode: " + getLabel("bayerMatrix"));
             }
-            if(ditherMode == 2){
+            if (ditherMode == 2) {
                 textRenderer.addStr2D(20, 80, "Treashold: " + getLabel("treshold"));
             }
         }
@@ -160,15 +145,10 @@ public class Renderer extends AbstractRenderer {
     }
 
 
-    private int boolToInt(boolean bool) {
-        return bool ? 1 : 0;
-    }
-
     private void render() {
         // výchozí framebuffer - render to obrazovky
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-        // nutno opravit viewport, protože render target si nastavuje vlastní
         glViewport(0, 0, width, height);
 
         glClearColor(0, 0.5f, 0, 1);
@@ -176,20 +156,27 @@ public class Renderer extends AbstractRenderer {
 
         glUseProgram(shaderProgramDith);
 
+        /**
+         * přepnutí textury
+         */
         if (choosedTexture != switchTexture) {
-
-            System.out.println("Chi zobrazit: "+ choosedTexture);
-                texture = textures.get(choosedTexture);
-                switchTexture = choosedTexture;
+            texture = textures.get(choosedTexture);
+            switchTexture = choosedTexture;
         }
 
-        if(uploadImage){
+        /**
+         * zobrazení JFileChooperu pro výběr/nahrání textury
+         * pokud je obrázek nahráván z res/textures, je ihned zobrazen
+         * pokud je nahráván z jiné složky, je nutné restarovat aplikaci
+         */
+        if (uploadImage) {
             OGLTexture2D existingTexture = FileControler.loadImage();
-            if(existingTexture != null)texture = existingTexture;
+            if (existingTexture != null) texture = existingTexture;
             uploadImage = false;
         }
 
-        texture.bind(shaderProgramDith, "mosaic", 0);
+
+        texture.bind(shaderProgramDith, "textureImg", 0);
         buffers.draw(GL_TRIANGLES, shaderProgramDith);
 
         glUniform1i(locColorMode, colorMode);
@@ -199,43 +186,16 @@ public class Renderer extends AbstractRenderer {
         glUniform1f(locNoiseConst, noiseConst);
     }
 
-    @Override
-    public GLFWCursorPosCallback getCursorCallback() {
-        return cursorPosCallback;
-    }
-
-    @Override
-    public GLFWMouseButtonCallback getMouseCallback() {
-        return mouseButtonCallback;
-    }
-
-    @Override
-    public GLFWKeyCallback getKeyCallback() {
-        return keyCallback;
-    }
-
-    private final GLFWCursorPosCallback cursorPosCallback = new GLFWCursorPosCallback() {
-        @Override
-        public void invoke(long window, double x, double y) {
-
-        }
-    };
-
-    private final GLFWMouseButtonCallback mouseButtonCallback = new GLFWMouseButtonCallback() {
-        @Override
-        public void invoke(long window, int button, int action, int mods) {
-            if (button == GLFW_MOUSE_BUTTON_LEFT) {
-
-            }
-        }
-    };
-
     private final GLFWKeyCallback keyCallback = new GLFWKeyCallback() {
         @Override
         public void invoke(long window, int key, int scancode, int action, int mods) {
             if (action == GLFW_PRESS || action == GLFW_REPEAT) {
                 switch (key) {
-                    // přepínání ditheringu
+
+                    /*
+                      Přepínání módů ditheringu
+                      Při přepnutí dithering modu dojde k resetování nastavení do defaultních hodnot
+                     */
                     case GLFW_KEY_X -> {
                         if (ditherMode == 2) {
                             ditherMode = 0;
@@ -247,7 +207,9 @@ public class Renderer extends AbstractRenderer {
 
                         }
                     }
-                    //  přepínání fotky/brevného ditheringu/ grayscale ditheringu v daném ditherModu
+                    /*
+                      Přepínání originální fotky, barevného ditheringu a grayscale ditheringu v daném dithering módu
+                     */
                     case GLFW_KEY_C -> {
                         if (colorMode == 2) {
                             colorMode = 0;
@@ -256,7 +218,9 @@ public class Renderer extends AbstractRenderer {
                         }
 
                     }
-                    // změna matice při použití ordered dithering (zvětšení matice) (max 8x8)
+                    /*
+                      Změna matice při použití ordered ditheringu (zvětšení matice) (max 8x8)
+                     */
                     case GLFW_KEY_UP -> {
                         if (noiseConst < 1 && ditherMode == 0) {
                             noiseConst = noiseConst + 0.1f;
@@ -268,35 +232,45 @@ public class Renderer extends AbstractRenderer {
                             tresHold = tresHold + 0.1f;
                         }
                     }
-                    // změna matice při použití ordered dithering (zmenšení matice) (min 2x2)
+                    /*
+                    Změna matice při použití ordered dithering (zmenšení matice) (min 2x2)
+                     */
                     case GLFW_KEY_DOWN -> {
-                        if(noiseConst > 0.1f && ditherMode == 0){
+                        if (noiseConst > 0.1f && ditherMode == 0) {
                             noiseConst = noiseConst - 0.1f;
                         }
                         if (bayerMatrix > 0 && ditherMode == 1) {
                             bayerMatrix--;
                         }
-                        if(tresHold > 0.1f && ditherMode == 2){
+                        if (tresHold > 0.1f && ditherMode == 2) {
                             tresHold = tresHold - 0.1f;
                         }
                     }
-                    // další image/textura
+                    /*
+                    další image/textura
+                     */
                     case GLFW_KEY_RIGHT -> {
                         if (choosedTexture != textures.size() - 1) {
                             choosedTexture++;
                         }
                     }
-                    // předchozí image/textura
+                    /*
+                    předchozí image/textura
+                     */
                     case GLFW_KEY_LEFT -> {
                         if (choosedTexture != 0) {
                             choosedTexture--;
                         }
                     }
-                    // upload textury
+                    /*
+                    upload textury
+                     */
                     case GLFW_KEY_U -> {
                         uploadImage = true;
                     }
-                    // show/hide labels
+                    /*
+                    zobrazení/skrytí popisků
+                     */
                     case GLFW_KEY_H -> {
                         showLabels = !showLabels;
                     }
