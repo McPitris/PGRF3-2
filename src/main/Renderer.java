@@ -1,7 +1,8 @@
 package main;
 
 import lwjglutils.*;
-import org.lwjgl.glfw.GLFWKeyCallback;
+import org.lwjgl.glfw.*;
+
 
 import java.util.ArrayList;
 import java.util.Objects;
@@ -173,6 +174,37 @@ public class Renderer extends AbstractRenderer {
         glUniform1f(locTresHold, tresHold);
         glUniform1f(locNoiseConst, noiseConst);
     }
+
+    @Override
+    public GLFWCursorPosCallback getCursorCallback() {
+        return cursorPosCallback;
+    }
+
+    @Override
+    public GLFWMouseButtonCallback getMouseCallback() {
+        return mouseButtonCallback;
+    }
+
+    @Override
+    public GLFWKeyCallback getKeyCallback() {
+        return keyCallback;
+    }
+
+    private final GLFWCursorPosCallback cursorPosCallback = new GLFWCursorPosCallback() {
+        @Override
+        public void invoke(long window, double x, double y) {
+
+        }
+    };
+
+    private final GLFWMouseButtonCallback mouseButtonCallback = new GLFWMouseButtonCallback() {
+        @Override
+        public void invoke(long window, int button, int action, int mods) {
+            if (button == GLFW_MOUSE_BUTTON_LEFT) {
+
+            }
+        }
+    };
 
     private final GLFWKeyCallback keyCallback = new GLFWKeyCallback() {
         @Override
