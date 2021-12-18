@@ -56,7 +56,7 @@ public class FileControler {
                 if (!allTextureNames.contains(selectedFile.getName())) {
 //                    BufferedImage picture = ImageIO.read(selectedFile);
                     Files.copy(selectedFile.toPath(), Paths.get("res/textures", selectedFile.getName()));
-                    JOptionPane.showMessageDialog(null, "Obrázek bude zobrazen po až restartování aplikace! \n Je nutné vypnout a zapnout apliakci.", "Upozornění", JOptionPane.WARNING_MESSAGE);
+                    JOptionPane.showMessageDialog(null, "Obrázek bude zobrazen po až restartování aplikace! \n Je nutné vypnout a zapnout aplikaci.", "Upozornění", JOptionPane.WARNING_MESSAGE);
                 } else {
                     nTexture = new OGLTexture2D("textures/" + selectedFile.getName());
                 }
