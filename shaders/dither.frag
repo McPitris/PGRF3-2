@@ -2,7 +2,7 @@
 
 in vec2 textureCoord;
 
-uniform sampler2D mosaic;
+uniform sampler2D textureImg;
 uniform int colorMode, ditherMode, bayerMatrix;
 uniform float tresHold, noiseConst;
 
@@ -87,12 +87,11 @@ float treshHoldDith(float color) {
     return 1.0;
 }
 
-
 void main(){
     // source: https://community.khronos.org/t/how-to-texture-a-rgb-image-in-grayscale/36420
-    float GrayScale = dot(texture2D(mosaic, textureCoord).rgb, vec3(0.3, 0.59, 0.11));
+    float GrayScale = dot(texture2D(textureImg, textureCoord).rgb, vec3(0.3, 0.59, 0.11));
 
-    vec3 textureColor = texture(mosaic, textureCoord).rgb;
+    vec3 textureColor = texture(textureImg, textureCoord).rgb;
 
     // podle zvoleného modu se provede dithering (podle zvoleného dithering. algd.)
     // 0 - random dithering

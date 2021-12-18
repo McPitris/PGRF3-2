@@ -1,7 +1,11 @@
 package main;
 
 import lwjglutils.OGLBuffers;
-
+/**
+ * @author Michal Petras
+ * @version 1.0
+ * @since 2021-12-18
+ */
 public class Quad {
 // https://home.zcu.cz/~smolik/zpg/cviceni/cv_04.html
     private static float[] getVertexBuffer() {
