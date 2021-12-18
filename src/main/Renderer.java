@@ -27,7 +27,7 @@ public class Renderer extends AbstractRenderer {
     private int shaderProgramDith;
     private OGLBuffers buffers;
 
-    private int locColorMode, locDitherMode, locBayerMatrix, locTresHold;
+    private int locColorMode, locDitherMode, locBayerMatrix, locTresHold, locNoiseConst;
 
     private OGLTexture2D texture;
 
@@ -35,6 +35,7 @@ public class Renderer extends AbstractRenderer {
     private int colorMode = 0;
     private int bayerMatrix = 0;
     private float tresHold = 0.4f;
+    private float noiseConst = 0.5f;
 
     ArrayList<OGLTexture2D> textures = new ArrayList<>();
 
@@ -89,6 +90,9 @@ public class Renderer extends AbstractRenderer {
         if(Objects.equals(type, "treshold")){
             label = (int)(tresHold*100)+"%";
         }
+        if(Objects.equals(type, "noiseConst")){
+            label = (int)(noiseConst*100)+"%";
+        }
         return label;
 
     }
@@ -123,6 +127,7 @@ public class Renderer extends AbstractRenderer {
         locDitherMode = glGetUniformLocation(shaderProgramDith, "ditherMode");
         locBayerMatrix = glGetUniformLocation(shaderProgramDith, "bayerMatrix");
         locTresHold = glGetUniformLocation(shaderProgramDith, "tresHold");
+        locNoiseConst = glGetUniformLocation(shaderProgramDith, "noiseConst");
 
 //        Mat4 projection = new Mat4PerspRH(Math.PI / 3, 600 / 800f, 1.0, 20.0);
 
@@ -140,6 +145,9 @@ public class Renderer extends AbstractRenderer {
             textRenderer.addStr2D(20, 20, "PGRF3 - 2");
             textRenderer.addStr2D(20, 40, "Dither mode: " + getLabel("ditherMode"));
             textRenderer.addStr2D(20, 60, "Color mode: " + getLabel("colorMode"));
+            if(ditherMode == 0){
+                textRenderer.addStr2D(20, 80, "Random noise: " + getLabel("noiseConst"));
+            }
             if (ditherMode == 1) {
                 textRenderer.addStr2D(20, 80, "Matrix mode: " + getLabel("bayerMatrix"));
             }
@@ -188,6 +196,7 @@ public class Renderer extends AbstractRenderer {
         glUniform1i(locDitherMode, ditherMode);
         glUniform1i(locBayerMatrix, bayerMatrix);
         glUniform1f(locTresHold, tresHold);
+        glUniform1f(locNoiseConst, noiseConst);
     }
 
     @Override
@@ -234,6 +243,7 @@ public class Renderer extends AbstractRenderer {
                             ditherMode++;
                             bayerMatrix = 0;
                             tresHold = 0.4f;
+                            noiseConst = 0.5f;
 
                         }
                     }
@@ -248,6 +258,9 @@ public class Renderer extends AbstractRenderer {
                     }
                     // změna matice při použití ordered dithering (zvětšení matice) (max 8x8)
                     case GLFW_KEY_UP -> {
+                        if (noiseConst < 1 && ditherMode == 0) {
+                            noiseConst = noiseConst + 0.1f;
+                        }
                         if (bayerMatrix < 2 && ditherMode == 1) {
                             bayerMatrix++;
                         }
@@ -257,6 +270,9 @@ public class Renderer extends AbstractRenderer {
                     }
                     // změna matice při použití ordered dithering (zmenšení matice) (min 2x2)
                     case GLFW_KEY_DOWN -> {
+                        if(noiseConst > 0.1f && ditherMode == 0){
+                            noiseConst = noiseConst - 0.1f;
+                        }
                         if (bayerMatrix > 0 && ditherMode == 1) {
                             bayerMatrix--;
                         }

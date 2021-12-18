@@ -4,7 +4,7 @@ in vec2 textureCoord;
 
 uniform sampler2D mosaic;
 uniform int colorMode, ditherMode, bayerMatrix;
-uniform float tresHold;
+uniform float tresHold, noiseConst;
 
 out vec4 outColor;
 
@@ -35,7 +35,7 @@ const int indexMatrix8x8[64] = int[]
 float randVal(vec2 uv)
 {
     float noise = (fract(sin(dot(uv, vec2(12.9898, 78.233)*2.0)) * 43758.5453));
-    return noise * 0.5;
+    return noise * noiseConst;
 }
 
 // dithering podle náhodné hodnoty TODO: lze invertovartovat barvy. možnost na zllepšení (přidat tuto možnost uživateli)
