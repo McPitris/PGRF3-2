@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Objects;
 
 /**
  * @author Michal Petras
@@ -18,7 +19,7 @@ import java.util.ArrayList;
 
 public class FileControler {
 
-    private static ArrayList<String> allTextureNames = new ArrayList<>();
+    private static final ArrayList<String> allTextureNames = new ArrayList<>();
 
     /**
      * Načtení všech obrázků z res/textures
@@ -29,11 +30,11 @@ public class FileControler {
         File texturesFolder = new File("res/textures");
         File[] listOfFiles = texturesFolder.listFiles();
 
-        for (int i = 0; i < listOfFiles.length; i++) {
-            if (listOfFiles[i].isFile()) {
+        for (File listOfFile : Objects.requireNonNull(listOfFiles)) {
+            if (listOfFile.isFile()) {
                 try {
-                    allTextureNames.add(listOfFiles[i].getName());
-                    defaultTextures.add(new OGLTexture2D("textures/" + listOfFiles[i].getName()));
+                    allTextureNames.add(listOfFile.getName());
+                    defaultTextures.add(new OGLTexture2D("textures/" + listOfFile.getName()));
                 } catch (IOException e) {
                     e.printStackTrace();
                 }

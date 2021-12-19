@@ -31,14 +31,14 @@ const int indexMatrix8x8[64] = int[]
 
 
 //source: https://gamedev.stackexchange.com/questions/32681/random-number-hlsl
-// získání náhodné hodnoty //TODO: v returnlze měnit "detail" ditheringu (větší číslo->detailnější) aktuálně na 0.5
+// získání náhodné hodnoty
 float randVal(vec2 uv)
 {
     float noise = (fract(sin(dot(uv, vec2(12.9898, 78.233)*2.0)) * 43758.5453));
     return noise * noiseConst;
 }
 
-// dithering podle náhodné hodnoty TODO: lze invertovartovat barvy. možnost na zllepšení (přidat tuto možnost uživateli)
+// dithering podle náhodné hodnoty
 float randomDither(float color) {
     // source: https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/gl_FragCoord.xhtml
     if (color < randVal(vec2(gl_FragCoord.xy)))
@@ -133,5 +133,3 @@ void main(){
         outColor = vec4(textureColor, 1.0f);
     }
 }
-
-//floyd-stenberg - https://titanwolf.org/Network/Articles/Article?AID=34c283fb-362a-4999-b6c1-306ef22139e3 (opencv a glsl) TODO: podívat se zda toto chci implementovat s GLSL a nebo potom zkusit opencv
