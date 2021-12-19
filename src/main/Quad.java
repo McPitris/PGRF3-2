@@ -9,13 +9,12 @@ import lwjglutils.OGLBuffers;
 public class Quad {
 // https://home.zcu.cz/~smolik/zpg/cviceni/cv_04.html
     private static float[] getVertexBuffer() {
-        float[] vb = {
+        return new float[]{
                 -1, -1, 0, 1,
                 1, -1, 1, 1,
                 1, 1, 1, 0,
                 -1, 1, 0, 0
         };
-        return vb;
     }
 
     public static OGLBuffers getQuad() {

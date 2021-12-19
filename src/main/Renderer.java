@@ -45,15 +45,9 @@ public class Renderer extends AbstractRenderer {
         String label = null;
         if (Objects.equals(type, "ditherMode")) {
             switch (ditherMode) {
-                case 0 -> {
-                    label = "Random dithering";
-                }
-                case 1 -> {
-                    label = "Ordered dithering";
-                }
-                case 2 -> {
-                    label = "Treshold dithering";
-                }
+                case 0 -> label = "Random dithering";
+                case 1 -> label = "Ordered dithering";
+                case 2 -> label = "Treshold dithering";
             }
         }
         if (Objects.equals(type, "colorMode")) {
@@ -112,8 +106,8 @@ public class Renderer extends AbstractRenderer {
 
         render();
 
-        /**
-         * @param showLabels - pokud je true (zapnutí popisků) zobrazí se text nastavení do obrazu
+        /*
+          @param showLabels - pokud je true (zapnutí popisků) zobrazí se text nastavení do obrazu
          */
         if (showLabels) {
             textRenderer.addStr2D(20, 20, "PGRF3 - 2");
@@ -145,18 +139,18 @@ public class Renderer extends AbstractRenderer {
 
         glUseProgram(shaderProgramDith);
 
-        /**
-         * přepnutí textury
+        /*
+          přepnutí textury
          */
         if (choosedTexture != switchTexture) {
             texture = textures.get(choosedTexture);
             switchTexture = choosedTexture;
         }
 
-        /**
-         * zobrazení JFileChooperu pro výběr/nahrání textury
-         * pokud je obrázek nahráván z res/textures, je ihned zobrazen
-         * pokud je nahráván z jiné složky, je nutné restarovat aplikaci
+        /*
+          zobrazení JFileChooperu pro výběr/nahrání textury
+          pokud je obrázek nahráván z res/textures, je ihned zobrazen
+          pokud je nahráván z jiné složky, je nutné restarovat aplikaci
          */
         if (uploadImage) {
             OGLTexture2D existingTexture = FileControler.loadImage();
@@ -176,35 +170,9 @@ public class Renderer extends AbstractRenderer {
     }
 
     @Override
-    public GLFWCursorPosCallback getCursorCallback() {
-        return cursorPosCallback;
-    }
-
-    @Override
-    public GLFWMouseButtonCallback getMouseCallback() {
-        return mouseButtonCallback;
-    }
-
-    @Override
     public GLFWKeyCallback getKeyCallback() {
         return keyCallback;
     }
-
-    private final GLFWCursorPosCallback cursorPosCallback = new GLFWCursorPosCallback() {
-        @Override
-        public void invoke(long window, double x, double y) {
-
-        }
-    };
-
-    private final GLFWMouseButtonCallback mouseButtonCallback = new GLFWMouseButtonCallback() {
-        @Override
-        public void invoke(long window, int button, int action, int mods) {
-            if (button == GLFW_MOUSE_BUTTON_LEFT) {
-
-            }
-        }
-    };
 
     private final GLFWKeyCallback keyCallback = new GLFWKeyCallback() {
         @Override
@@ -285,15 +253,11 @@ public class Renderer extends AbstractRenderer {
                     /*
                     upload textury
                      */
-                    case GLFW_KEY_U -> {
-                        uploadImage = true;
-                    }
+                    case GLFW_KEY_U -> uploadImage = true;
                     /*
                     zobrazení/skrytí popisků
                      */
-                    case GLFW_KEY_H -> {
-                        showLabels = !showLabels;
-                    }
+                    case GLFW_KEY_H -> showLabels = !showLabels;
 
                 }
             }
